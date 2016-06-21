@@ -252,12 +252,12 @@ public class StubRequest {
          final boolean isAssertingValueSet = isSet(thisAssertingPostBody);
          if (!isAssertingValueSet) {
             return false;
-         } else if (isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_JSON)) {
-            try {
-               return JSONCompare.compareJSON(dataStorePostBody, thisAssertingPostBody, JSONCompareMode.NON_EXTENSIBLE).passed();
-            } catch (JSONException e) {
-               return false;
-            }
+         // } else if (isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_JSON)) {
+         //    try {
+         //       return JSONCompare.compareJSON(dataStorePostBody, thisAssertingPostBody, JSONCompareMode.NON_EXTENSIBLE).passed();
+         //    } catch (JSONException e) {
+         //       return false;
+         //    }
          } else if (isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_XML)) {
             try {
                final Diff diff = new Diff(dataStorePostBody, thisAssertingPostBody);
