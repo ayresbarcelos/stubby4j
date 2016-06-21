@@ -230,7 +230,7 @@ public class StubRequest {
 
          return urlsMatch(dataStoreRequest.url, this.url)
             && arraysIntersect(dataStoreRequest.getMethod(), this.getMethod())
-            && postBodiesMatch(dataStoreRequest.isPostStubbed(), dataStoreRequest.getPostBody(), this.getPostBody())
+            && postBodiesMatch(dataStoreRequest.isPostStubbed(), dataStoreRequest.getPostBody(), this.getPostBody(), dataStoreRequest.getHeaders())
             && headersMatch(dataStoreRequest.getHeaders(), this.getHeaders())
             && queriesMatch(dataStoreRequest.getQuery(), this.getQuery());
       }
@@ -246,19 +246,20 @@ public class StubRequest {
       return stringsMatch(dataStoreUrl, thisAssertingUrl, YamlProperties.URL);
    }
 
-   private boolean postBodiesMatch(final boolean isDataStorePostStubbed, final String dataStorePostBody, final String thisAssertingPostBody) {
+   private boolean postBodiesMatch(final boolean isDataStorePostStubbed, final String dataStorePostBody, final String thisAssertingPostBody, Map<String, String> headers) {
       if (isDataStorePostStubbed) {
          final String assertingContentType = this.getHeaders().get("content-type");
+         final boolean forceRegex = headers.get("force-regex") != null && headers.get("force-regex").equals("true");
          final boolean isAssertingValueSet = isSet(thisAssertingPostBody);
          if (!isAssertingValueSet) {
             return false;
-         // } else if (isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_JSON)) {
-         //    try {
-         //       return JSONCompare.compareJSON(dataStorePostBody, thisAssertingPostBody, JSONCompareMode.NON_EXTENSIBLE).passed();
-         //    } catch (JSONException e) {
-         //       return false;
-         //    }
-         } else if (isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_XML)) {
+          } else if (!forceRegex && isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_JSON)) {
+             try {
+                return JSONCompare.compareJSON(dataStorePostBody, thisAssertingPostBody, JSONCompareMode.NON_EXTENSIBLE).passed();
+             } catch (JSONException e) {
+                return false;
+             }
+         } else if (!forceRegex && isSet(assertingContentType) && assertingContentType.contains(Common.HEADER_APPLICATION_XML)) {
             try {
                final Diff diff = new Diff(dataStorePostBody, thisAssertingPostBody);
                diff.overrideElementQualifier(new ElementNameAndAttributeQualifier());
